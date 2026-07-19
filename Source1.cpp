@@ -1,11 +1,10 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <map>
 
 // добавить переменную молотое кофе
-// добавить меню (как на кофемашине)
 // добавить оплату и проверку оплаты
-// добавить название напитков в переменную к CoffeeDrink (сделать вывод: ваш Latte/Espresso готов)
 
 class CoffeeDrink {
 
@@ -13,8 +12,24 @@ public:
 	int water_value;
 	int coffee_value;
 	int milk_value;
-	CoffeeDrink(int wv, int cv, int mv) : water_value(wv), coffee_value(cv), milk_value(mv) {};
+	std::string name;
 
+	CoffeeDrink() : water_value(0), coffee_value(0), milk_value(0), name("") {
+	}
+
+	CoffeeDrink(int wv, int cv, int mv, std::string name) : water_value(wv), coffee_value(cv), milk_value(mv), name(name) {};
+
+	friend std::ostream& operator<<(std::ostream& out, const CoffeeDrink& drink) {
+		out << drink.water_value << " " << drink.coffee_value << " " << drink.milk_value << " " << drink.name;
+		return out;
+	}
+
+	friend std::istream& operator>>(std::istream& in, CoffeeDrink& drink) {
+		if (in >> drink.water_value >> drink.coffee_value >> drink.milk_value) {
+			std::getline(in >> std::ws, drink.name);
+		}
+		return in;
+	}
 };
 
 class Storage {
@@ -27,7 +42,6 @@ protected:
 	int milk_capacity = 0;
 
 public:
-
 	Storage() :
 		max_water_capacity(0),
 		max_coffee_capacity(0), 
@@ -38,26 +52,8 @@ public:
 		max_coffee_capacity(max_coffee_capacity), 
 		max_milk_capacity(max_milk_capacity) {};
 
-	bool CheckWater(int needed_water) {
-		if (water_capacity - needed_water >= 0) {
-			return 1;
-		}
-		else {
-			return 0;
-		}
-	}
-
-	bool CheckCoffee(int needed_coffee) {
-		if (coffee_capacity - needed_coffee >= 0) {
-			return 1;
-		}
-		else {
-			return 0;
-		}
-	}
-
-	bool CheckMilk(int needed_milk) {
-		if (milk_capacity - needed_milk >= 0) {
+	bool CheckTheIngridients(CoffeeDrink& drink) {
+		if (water_capacity - drink.water_value >= 0 && coffee_capacity - drink.coffee_value >= 0 && milk_capacity - drink.milk_value >= 0) {
 			return 1;
 		}
 		else {
@@ -110,19 +106,13 @@ public:
 	}
 
 	void ShowStorage() {
-		std::cout << std::endl  << "max_water_capacity: " << max_water_capacity << std::endl
-		<< "water_capacity: " << water_capacity << std::endl
-		<< "max_coffee_capacity: " << max_coffee_capacity << std::endl 
-		<< "coffee_capacity: " << coffee_capacity << std::endl
-		<< "max_milk_capacity: " << max_milk_capacity << std::endl 
-		<< "milk_capacity: " << milk_capacity << std::endl << std::endl;
+		std::cout << std::endl << "water_capacity: " << water_capacity << std::endl
+			<< "coffee_capacity: " << coffee_capacity << std::endl
+			<< "milk_capacity: " << milk_capacity << std::endl
+			<< "max_water_capacity: " << max_water_capacity << std::endl
+			<< "max_coffee_capacity: " << max_coffee_capacity << std::endl
+			<< "max_milk_capacity: " << max_milk_capacity << std::endl << std::endl;
 	}
-
-	
-
-protected:
-	
-
 };
 
 class CoffeeGrinder {
@@ -142,21 +132,21 @@ public:
 		std::cout << "Making the coffee..." << std::endl;
 		storage.ReduceWater(drink);
 		storage.ReduceMilk(drink);
-		
+		std::cout << "Your " << drink.name << " is ready!" << std::endl;
 	}
 };
 
 class CoffeeMachine {
-	
+	std::string name;
 public:
-	CoffeeMachine(int mwc, int mcc, int mmc) : storage(mwc, mcc, mmc) {
+	CoffeeMachine(int mwc, int mcc, int mmc, std::string name) : storage(mwc, mcc, mmc), name(name) {
 	}
 	Storage storage;
 	CoffeeGrinder grinder;
 	CoffeeMaker maker;
 
 	void start(CoffeeDrink &drink) {
-		if (storage.CheckCoffee(drink.coffee_value) && storage.CheckMilk(drink.milk_value) && storage.CheckWater(drink.water_value)) {
+		if (storage.CheckTheIngridients(drink)) {
 			grinder.Grind(storage, drink);
 			maker.Make(storage, drink);
 		}
@@ -166,26 +156,78 @@ public:
 		
 	}
 
+	std::string GetName() {
+		return name;
+	}
 };
 
 int main() {
-	// Drink(вода, кофе, молоко)
+	CoffeeMachine DELONGHI(2000, 200, 1000, "DELONGHI");
+	DELONGHI.storage.AddWater(1000);
+	DELONGHI.storage.AddCoffee(100);
+	DELONGHI.storage.AddMilk(500);
 
-	CoffeeDrink Latte(50, 5, 100);
-	CoffeeDrink Espresso(50, 5, 0);
+	std::map<int, CoffeeDrink> menu_book;
+	std::string path = "storage.txt";
 
-	CoffeeMachine LOKO(1500, 200, 1000);
+	std::ifstream fs;
+	CoffeeDrink temp;
+	int n = 1;
 
+	fs.open(path, std::ios::in);
+	if (!fs.is_open()) {
+		std::cout << "File error!" << std::endl;
+	}
+	else {
+		while (fs >> temp) {
+			menu_book.insert({ n, temp });
+			n++;
+		}
+	}
+	fs.close();
 
-	LOKO.storage.AddCoffee(20);
-	LOKO.storage.AddMilk(100);
-	LOKO.storage.AddWater(500);
-	LOKO.storage.ShowStorage();
+	while (true) {
+		std::cout << "------------------------" << std::endl
+			<< "CoffeeMachine " << DELONGHI.GetName() << std::endl
+			<< "1. Menu" << std::endl
+			<< "2. Add the ingridients" << std::endl
+			<< "3. Check the storage" << std::endl
+			<< "4. Exit" << std::endl;
+		int menu_choose;
+		std::cin >> menu_choose;
 
-	LOKO.start(Espresso);
+		switch (menu_choose) {
+		case 1: {
+			for (auto& [number, drink] : menu_book) {
+				std::cout << number << ". " << drink.name << std::endl;
+			}
+			int drink_choose;
+			std::cin >> drink_choose;
+			if (menu_book.find(drink_choose) != menu_book.end()) {
+				CoffeeDrink& selected_drink = menu_book.at(drink_choose);
+				std::cout << "Starting " << (selected_drink).name << "..." << std::endl;
+				DELONGHI.start(selected_drink);
+			}
+			else {
+				std::cout << "Invalid number!" << std::endl;
+			}
+			
 
-	LOKO.storage.ShowStorage();
+			break;
+		}
+		case 2: {
 
-	
+			break;
+		}
+		case 3: {
+			DELONGHI.storage.ShowStorage();
+			break;
+		}
+		case 4: {
+			exit(0);
+		}
+		}
+	}
 
+	return 0;
 }

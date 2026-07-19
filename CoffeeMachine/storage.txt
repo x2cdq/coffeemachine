@@ -1,0 +1,6 @@
+50 5 0 Espresso
+50 5 100 Latte
+150 7 0 Americano
+40 7 100 Cappuccino
+60 14 0 Doppio
+50 14 110 Flat White
