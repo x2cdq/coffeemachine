@@ -68,6 +68,7 @@ public:
 		}
 		else {
 			water_capacity += value;
+			std::cout << "Added " << value << " amount of water." << std::endl;
 		}
 		
 	}
@@ -79,6 +80,7 @@ public:
 		}
 		else {
 			coffee_capacity += value;
+			std::cout << "Added " << value << " amount of coffee." << std::endl;
 		}
 	}
 
@@ -89,6 +91,7 @@ public:
 		}
 		else {
 			milk_capacity += value;
+			std::cout << "Added " << value << " amount of milk." << std::endl;
 		}
 		
 	}
@@ -193,18 +196,18 @@ int main() {
 			<< "2. Add the ingridients" << std::endl
 			<< "3. Check the storage" << std::endl
 			<< "4. Exit" << std::endl;
-		int menu_choose;
-		std::cin >> menu_choose;
+		int menu_selection;
+		std::cin >> menu_selection;
 
-		switch (menu_choose) {
+		switch (menu_selection) {
 		case 1: {
 			for (auto& [number, drink] : menu_book) {
 				std::cout << number << ". " << drink.name << std::endl;
 			}
-			int drink_choose;
-			std::cin >> drink_choose;
-			if (menu_book.find(drink_choose) != menu_book.end()) {
-				CoffeeDrink& selected_drink = menu_book.at(drink_choose);
+			int drink_selection;
+			std::cin >> drink_selection;
+			if (menu_book.find(drink_selection) != menu_book.end()) {
+				CoffeeDrink& selected_drink = menu_book.at(drink_selection);
 				std::cout << "Starting " << (selected_drink).name << "..." << std::endl;
 				DELONGHI.start(selected_drink);
 			}
@@ -216,6 +219,23 @@ int main() {
 			break;
 		}
 		case 2: {
+			int water_value;
+			int coffee_value;
+			int milk_value;
+			std::cout << "Enter the resources." << std::endl;
+
+			std::cout << "Water value: ";
+			std::cin >> water_value;
+			DELONGHI.storage.AddWater(water_value);
+
+			std::cout << "Coffee value: ";
+			std::cin >> coffee_value;
+			DELONGHI.storage.AddCoffee(coffee_value);
+
+			std::cout << "Milk value: ";
+			std::cin >> milk_value;
+			DELONGHI.storage.AddMilk(milk_value);
+			
 
 			break;
 		}
