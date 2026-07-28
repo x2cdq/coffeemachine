@@ -3,9 +3,6 @@
 #include <fstream>
 #include <map>
 
-// добавить переменную молотое кофе
-// добавить оплату и проверку оплаты
-
 class CoffeeDrink {
 
 public:
@@ -116,6 +113,26 @@ public:
 			<< "max_coffee_capacity: " << max_coffee_capacity << std::endl
 			<< "max_milk_capacity: " << max_milk_capacity << std::endl << std::endl;
 	}
+
+	int ReturnWater() {
+		return water_capacity;
+	}
+	int ReturnCoffee() {
+		return coffee_capacity;
+	}
+	int ReturnMilk() {
+		return milk_capacity;
+	}
+
+	friend std::ostream& operator<<(std::ostream& out, const Storage &storage) {
+		out << storage.water_capacity << " " << storage.coffee_capacity << " " << storage.milk_capacity;
+		return out;
+	}
+
+	friend std::istream& operator>>(std::istream& in, Storage& storage) {
+		in >> storage.water_capacity >> storage.coffee_capacity >> storage.milk_capacity;
+		return in;
+	}
 };
 
 class CoffeeGrinder {
@@ -166,18 +183,17 @@ public:
 
 int main() {
 	CoffeeMachine DELONGHI(2000, 200, 1000, "DELONGHI");
-	DELONGHI.storage.AddWater(1000);
-	DELONGHI.storage.AddCoffee(100);
-	DELONGHI.storage.AddMilk(500);
+
 
 	std::map<int, CoffeeDrink> menu_book;
-	std::string path = "storage.txt";
+	std::string recipes_path = "recipes.txt";
+	std::string storage_path = "storage.txt";
 
-	std::ifstream fs;
+	std::fstream fs;
 	CoffeeDrink temp;
 	int n = 1;
 
-	fs.open(path, std::ios::in);
+	fs.open(recipes_path, std::ios::in);
 	if (!fs.is_open()) {
 		std::cout << "File error!" << std::endl;
 	}
@@ -188,6 +204,17 @@ int main() {
 		}
 	}
 	fs.close();
+
+	fs.open(storage_path, std::ios::in);
+	if (!fs.is_open()) {
+		std::cout << "File error!" << std::endl;
+	}
+	else {
+		fs >> DELONGHI.storage;
+	}
+
+	fs.close();
+	
 
 	while (true) {
 		std::cout << "------------------------" << std::endl
@@ -244,10 +271,21 @@ int main() {
 			break;
 		}
 		case 4: {
-			exit(0);
+			break;
 		}
 		}
+		if (menu_selection == 4) break;
 	}
+
+	fs.open(storage_path, std::ios::out);
+	if (!fs.is_open()) {
+		std::cout << "File error!" << std::endl;
+	}
+	else {
+		fs << DELONGHI.storage;
+	}
+
+	fs.close();
 
 	return 0;
 }
